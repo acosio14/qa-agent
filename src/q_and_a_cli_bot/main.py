@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import logging
 
 def main():
     parser = argparse.ArgumentParser(description='Q&A bot for docs, files, notes, etc')
@@ -10,7 +11,10 @@ def main():
 
     args = parser.parse_args() 
 
-    Path(args.dir_path)    
+    dir_path = Path(args.dir_path)
+    if not dir_path.is_dir():
+        logging.error("directory path does not exist.")
+
 
 if __name__ == "__main__":
     main()

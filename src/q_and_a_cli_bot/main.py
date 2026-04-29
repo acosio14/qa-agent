@@ -8,6 +8,7 @@ def main():
     parser.add_argument('--role', help='Agent role')
     parser.add_argument('--context', help='Extra initial context to add to help the agent')
     parser.add_argument('--question', help='Question to ask')
+    parser.add_argument('--model', default='claude-opus-4.6', help='LLM model to select' )
 
     args = parser.parse_args() 
 

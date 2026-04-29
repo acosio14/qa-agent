@@ -3,6 +3,8 @@
 # Should be model agnostic.
 # Sends message to llm.py
 # Obtains back response
+# History - how does that get stored? Linked list, graph, some data strcuture?
+# Meaning question and answers. They need to go somewhere?
 
 class QAAgent():
     def __init__(self, model, dir_path):

@@ -1,0 +1,1 @@
+# Document/Notes dataclass, shared types

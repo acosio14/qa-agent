@@ -1,3 +1,5 @@
+# CLI entry point, wires everything 
+
 import argparse
 from pathlib import Path
 import logging

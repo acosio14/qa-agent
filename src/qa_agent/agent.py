@@ -1,10 +1,4 @@
-# Agent should be used to create message and send it to LLM
-# Needs to extract file, summarize them? parse them?
-# Should be model agnostic.
-# Sends message to llm.py
-# Obtains back response
-# History - how does that get stored? Linked list, graph, some data strcuture?
-# Meaning question and answers. They need to go somewhere?
+# Control loop, prompt building, orchestration
 
 class QAAgent():
     def __init__(self, model, dir_path):

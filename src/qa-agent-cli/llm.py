@@ -1,5 +1,8 @@
 from openrouter import OpenRouter
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 with OpenRouter(
     api_key=os.getenv("OPENROUTER_API_KEY")

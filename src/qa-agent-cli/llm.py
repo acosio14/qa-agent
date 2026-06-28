@@ -6,7 +6,7 @@ from typing
 load_dotenv() # does this need to cached?
 
 class QAAssistant:
-    def __init__(self, user_question: str):
+    def __init__(self,  user_question: str, model: str = "google/gemma-4-31b-it:free") -> None:
         self.system_prompt: str = (
             "You are a helpful and articulate Q&A assistant."
             "You take in one or multiple files, notes, and/or documents."
@@ -18,17 +18,16 @@ class QAAssistant:
             "answer in a file, document, and/or note."
         )
         self.question_prompt: str = user_question
+        self.model: str = model
 
     def GetAnswer(self) -> str:
         with OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")) as open_router:
             response = open_router.chat.send(
-                model="google/gemma-4-31b-it:free",
+                model=self.mo,
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": self.question_prompt}
                 ]
             )
 
-            answer: str = response.choices[0].message.content
-            
-            return print(answer)
+            return response.choices[0].message.content

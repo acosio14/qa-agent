@@ -1,15 +1,34 @@
 from openrouter import OpenRouter
 import os
 from dotenv import load_dotenv
+from typing
 
 load_dotenv() # does this need to cached?
 
-with OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")) as open_router:
-    response = open_router.chat.send(
-        model="google/gemma-4-31b-it:free",
-        messages=[
-            {"role": "user", "content": "Hello!"}
-        ]
-    )
+class QAAssistant:
+    def __init__(self, user_question: str):
+        self.system_prompt: str = (
+            "You are a helpful and articulate Q&A assistant."
+            "You take in one or multiple files, notes, and/or documents."
+            "You only answer questions based on the files provided." \
+            "If you can't find and source the documents, you politely" \
+            "tell user 'I don't know', 'Answer not in docs', etc." \
+            "When giving an answer always look for the information in the" \
+            "files and try to give a citation or explicity location/source of" \
+            "answer in a file, document, and/or note."
+        )
+        self.question_prompt: str = user_question
 
-    print(response.choices[0].message.content)
+    def GetAnswer(self) -> str:
+        with OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")) as open_router:
+            response = open_router.chat.send(
+                model="google/gemma-4-31b-it:free",
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": self.question_prompt}
+                ]
+            )
+
+            answer: str = response.choices[0].message.content
+            
+            return print(answer)

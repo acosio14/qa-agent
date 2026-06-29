@@ -1,7 +1,6 @@
 from openrouter import OpenRouter
 import os
 from dotenv import load_dotenv
-from typing
 
 load_dotenv() # does this need to cached?
 
@@ -25,8 +24,8 @@ class QAAssistant:
             response = open_router.chat.send(
                 model=self.mo,
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": self.question_prompt}
+                    {"role": "system", "content": self.system_prompt}, 
+                    {"role": "user", "content": self.question_prompt} #To-Do: Needs to include context of docs/files/notes
                 ]
             )
 

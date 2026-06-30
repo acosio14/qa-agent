@@ -1,23 +1,21 @@
 from openrouter import OpenRouter
 import os
 from dotenv import load_dotenv
+from models import Model, SystemPrompt, UserQuestion
 
 load_dotenv() # does this need to cached?
 
 class QAAssistant:
-    def __init__(self,  user_question: str, model: str = "google/gemma-4-31b-it:free") -> None:
-        self.system_prompt: str = (
-            "You are a helpful and articulate Q&A assistant."
-            "You take in one or multiple files, notes, and/or documents."
-            "You only answer questions based on the files provided." \
-            "If you can't find and source the documents, you politely" \
-            "tell user 'I don't know', 'Answer not in docs', etc." \
-            "When giving an answer always look for the information in the" \
-            "files and try to give a citation or explicity location/source of" \
-            "answer in a file, document, and/or note."
-        )
-        self.question_prompt: str = user_question
-        self.model: str = model
+    def __init__(
+        self,
+        user_question: UserQuestion,
+        system_prompt: SystemPrompt = SystemPrompt.text,
+        model: Model = Model.GEMMA_4_31B
+    ) -> None:
+        
+        self.system_prompt: SystemPrompt = system_prompt
+        self.question_prompt: UserQuestion = user_question
+        self.model: Model = model
 
     def GetAnswer(self) -> str:
         with OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")) as open_router:

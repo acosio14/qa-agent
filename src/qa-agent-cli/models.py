@@ -2,9 +2,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from enum import Enum
 
-class Path(BaseModel):
-    is_file: bool # TO-DO: Figure out if I need is_file or is_dir, I actually feel this is check somewhere else in parsing
-    is_dir: bool
+class Document(BaseModel):
     path: Path
 
 class UserQuestion(BaseModel):

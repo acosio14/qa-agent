@@ -44,11 +44,13 @@ def main():
         my_path = select_path(args.path)
         my_question = ask_question(args.question)
     
-    QAAssistant(
+    response = QAAssistant(
         user_question=sys_prompt,
         system_prompt=question,
         model=model.value,
-    )
+    ).GetAnswer()
+
+    print(response)
 
 if __name__ == "__main__":
     main()

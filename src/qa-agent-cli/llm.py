@@ -1,18 +1,17 @@
 from openrouter import OpenRouter
 import os
 from dotenv import load_dotenv
-from models import Model, SystemPrompt, UserQuestion
 
 load_dotenv() # does this need to cached?
 
 class QAAssistant:
     def __init__(
         self,
-        user_question: UserQuestion,
-        model: Model,
+        user_question: str,
+        model: str,
     ) -> None:
         
-        self.system_prompt: SystemPrompt = (
+        self.system_prompt: str = (
             "You are a helpful and articulate Q&A assistant. "
             "You take in one or multiple files, notes, and/or documents. "
             "You only answer questions based on the files provided. "
@@ -22,8 +21,8 @@ class QAAssistant:
             "files and try to give a citation or explicity location/source of "
             "answer in a file, document, and/or note."
         )
-        self.question_prompt: UserQuestion = user_question.text
-        self.model: Model = model
+        self.question_prompt: str = user_question.text
+        self.model: str = model
 
     def GetAnswer(self) -> str:
         with OpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")) as open_router:

@@ -1,56 +1,31 @@
 import argparse
 from pathlib import Path
-from llm import QAAssistant
-from models import UserQuestion, AgentResponse, SystemPrompt, Document, Model
-
-def select_path(path: Path) -> Document:
-    return Document(path=path)
-
-def ask_question(question: str) -> UserQuestion:
-    return UserQuestion(text=question)
-
-def select_model(model: str) -> Model:
-    model = Model.GEMMA_4_31B
-
-    return model
-
-def write_system_prompt(system_prompt: str) -> SystemPrompt:
-    return SystemPrompt(text=system_prompt)
+import file_parser, formatter, llm
 
 def main():
-    sys_prompt = SystemPrompt()
-    question = UserQuestion()
-    model = Model.GEMMA_4_31B
-
     parser = argparse.ArgumentParser(
-        description="Q&A Agent CLI - Will answer questions about any document, file, and/or notes."
+        description="Q&A Agent - Will answer questions about any file."
     )
-    
-    parser.add_argument("path") # filepath or directorypath
-    parser.add_argument("question")
 
-    parser.add_argument("--model") 
-    parser.add_argument("--system-prompt")
+    parser.add_argument("path") # filepath or dir_path
+    parser.add_argument("question")
+    parser.add_argument("--model") #optional
 
     args = parser.parse_args()
-
+    
+    free_models = {
+        "gemma-4-31b": "google/gemma-4-31b-it:free", 
+        "minstral_7b": "minstralai/mistral-7b-instruct:free"
+    }
+    model = free_models["gemma-4-31b"]
     if args.model:
-        model = select_model(args.model)
-    
-    if args.system_prompt: #change system prompt
-        sys_prompt = write_system_prompt(args.system_prompt)
-    
-    if args.question:# Need to combine doc and question and insert into context
-        my_path = select_path(args.path)
-        my_question = ask_question(args.question)
-    
-    response = QAAssistant(
-        user_question=sys_prompt,
-        system_prompt=question,
-        model=model.value,
-    ).GetAnswer()
+        model = free_models.get(args.model)
 
-    print(response)
+    dict_variable = file_parser.parse(args.path)
+    formatted_question = formatter.format(dict_variable, args.question)
+    llm.QAAssistant(formatted_question, model).GetAnswer()
+    
+
 
 if __name__ == "__main__":
     main()

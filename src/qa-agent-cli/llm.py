@@ -7,7 +7,7 @@ load_dotenv() # does this need to cached?
 class QAAssistant:
     def __init__(
         self,
-        user_question: str,
+        prompt: str,
         model: str,
     ) -> None:
         
@@ -21,7 +21,7 @@ class QAAssistant:
             "files and try to give a citation or explicity location/source of "
             "answer in a file, document, and/or note."
         )
-        self.question_prompt: str = user_question
+        self.question_prompt: str = prompt
         self.model: str = model
 
     def GetAnswer(self) -> str:

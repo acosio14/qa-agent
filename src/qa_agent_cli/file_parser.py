@@ -11,12 +11,13 @@ def parse(filepath: Path) -> dict[str]:
         files = [file for file in Path(filepath).iterdir()]
     else:
         logging.error('File path cant be read as file or dir')
+        raise FileNotFoundError
 
     file_dict = {}
     for file in files:
         with open(file) as f:
-            # Read file line by line and convert to dictionary
             content = f.read()
-            file_dict[file] = content
+            filename = str(file).split("/")[-1].replace(".","_")
+            file_dict[filename] = content
 
     return file_dict

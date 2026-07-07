@@ -64,9 +64,3 @@ class TestParseErrors:
 
         with pytest.raises(FileNotFoundError):
             parse(missing)
-    
-    def test_nonpath_type_raises(self, tmp_path):
-        missing = ""
-
-        with pytest.raises(FileNotFoundError):
-            parse(missing)

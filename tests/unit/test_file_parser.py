@@ -9,7 +9,7 @@ class TestParseSingleFile:
 
         result = parse(test_file)
 
-        assert result == {"test_file": "This is a test file"}
+        assert result == {"test_file_txt": "This is a test file"}
 
     def test_empty_file_returns_empty_string_content(self, tmp_path):
         test_file = tmp_path / "empty.txt"
@@ -17,7 +17,7 @@ class TestParseSingleFile:
 
         result = parse(test_file)
 
-        assert result == {"empty": ""}
+        assert result == {"empty_txt": ""}
 
     def test_preserves_multiline_content(self, tmp_path):
         content = "line one\nline two\nline three"
@@ -26,7 +26,7 @@ class TestParseSingleFile:
 
         result = parse(test_file)
 
-        assert result == {"multiline": content}
+        assert result == {"multiline_txt": content}
 
 
 class TestParseDirectory:
@@ -37,8 +37,8 @@ class TestParseDirectory:
         result = parse(tmp_path)
 
         assert result == {
-            "test_file1": "This is test file 1",
-            "test_file2": "This is test file 2",
+            "test_file1_txt": "This is test file 1",
+            "test_file2_txt": "This is test file 2",
         }
 
     def test_empty_directory_returns_empty_dict(self, tmp_path):
@@ -56,10 +56,17 @@ class TestParseDirectory:
         result = parse(tmp_path)
 
         assert len(result) == 2
+        # Need to assert that it sees notes_txt and notes_md
 
 class TestParseErrors:
     def test_nonexistent_path_raises(self, tmp_path):
         missing = tmp_path / "does_not_exist.txt"
+
+        with pytest.raises(FileNotFoundError):
+            parse(missing)
+    
+    def test_nonpath_type_raises(self, tmp_path):
+        missing = ""
 
         with pytest.raises(FileNotFoundError):
             parse(missing)

@@ -1,1 +1,5 @@
 This is a test file
+
+Assests: $50
+Debt: $25
+Net worth: $25

@@ -26,8 +26,8 @@ def main():
         model = free_models.get(args.model)
 
     files_dict = file_parser.parse(args.path)
-    formatted_question = formatter.format(files_dict, args.question)
-    response = llm.QAAssistant(formatted_question, model).GetAnswer()
+    files, question = formatter.format(files_dict, args.question)
+    response = llm.QAAssistant(files, question, model).GetAnswer()
 
     print(response)
     

@@ -13,13 +13,13 @@ class QAAssistant:
         
         self.system_prompt: str = (
             "You are a helpful and articulate Q&A assistant. "
-            "You take in one or multiple files, notes, and/or documents. "
+            "You take in one or multiple files. "
             "You only answer questions based on the files provided. "
             "If you can't find and source the documents, you politely "
             "tell user 'I don't know', 'Answer not in docs', etc. "
-            "When giving an answer always look for the information in the "
-            "files and try to give a citation or explicity location/source of "
-            "answer in a file, document, and/or note."
+            "When giving an answer, always look for the information in the "
+            "files and attempt to give a citation or explicit location/source of "
+            "answer in a given file."
         )
         self.question_prompt: str = prompt
         self.model: str = model

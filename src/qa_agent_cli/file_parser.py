@@ -1,6 +1,16 @@
-# Parses the terminal inputs (takes and structures it to correct format)
+# Parses the terminal inputs
+# Extractor - get the meaningful content out of the file.
+# Read bytes, detect type, decode or convert.
+# Hand back clean structured content
+
 from pathlib import Path
 import logging
+
+def file_type():
+    # Used to verify if its a file type the app supports
+    # Supported types: .txt, .md, .csv, .docx, .pdf,
+    # Not supported: .json, .xlsx, .yaml
+    ...
 
 def parse(filepath: Path) -> dict[str]:
     # Need to verify if its a directory or file

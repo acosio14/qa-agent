@@ -28,10 +28,10 @@ class QAAssistant:
 
     def GetAnswer(self) -> str:
         question_prompt = (
-            f"You are using the llm in parentheses ({self.model}). "
             f"You are given the files inside the brackets [{self.files}]. "
             f"Concisely answer the question inside the triple ticks ```{self.question}```. "
             f"The response should be less than or equal to 2 to 3 sentences. "
+            f"You are using the llm in parentheses ({self.model.split(':')[0]}). "
             f"The response should be formatted in the following way: "
             f"Answer: <RESPONSE HERE>.\n"
             f"Model: <MODEL HERE>\n"

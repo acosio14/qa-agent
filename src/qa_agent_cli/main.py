@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-import file_parser, formatter, llm
+import qa_agent_cli.parser as parser, formatter, llm
 
 def main():
     parser = argparse.ArgumentParser(
@@ -25,7 +25,7 @@ def main():
     if args.model:
         model = free_models.get(args.model)
 
-    files_dict = file_parser.parse(args.path)
+    files_dict = parser.parse(args.path)
     files, question = formatter.format(files_dict, args.question)
     response = llm.QAAssistant(files, question, model).GetAnswer()
 

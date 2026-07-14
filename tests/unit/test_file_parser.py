@@ -1,6 +1,6 @@
 import pytest
 
-from qa_agent_cli.file_parser import parse
+from qa_agent_cli.parser import parse
 
 class TestParseSingleFile:
     def test_returns_dict_keyed_by_filename_stem(self, tmp_path):

@@ -8,7 +8,7 @@ import logging
 from file_types import FileType
 
 def create_file_type_dataclass(filepath: Path):
-    # Used to verify if its a file type the app supports
+    # Used to verify if supported file type and parse it.
     # Supported types: .txt, .md, .csv, .docx, .pdf,
     # Not supported: .json, .xlsx, .yaml
     file_extension = filepath.suffix

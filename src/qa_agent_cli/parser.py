@@ -7,6 +7,34 @@ from pathlib import Path
 import logging
 from file_types import FileType
 
+PARSER_REGISTRY = {}
+
+def register_parser(file_type):
+    def decorator(func):
+        PARSER_REGISTRY[file_type] = func
+        return func
+    return decorator
+
+@register_parser("txt")
+def txt_file_parser():
+    ...
+
+@register_parser("md")
+def markdown_parser():
+    ...
+
+@register_parser("csv")
+def csv_parser():
+    ...
+
+@register_parser("docx")
+def docx_parser():
+    ...
+
+@register_parser("pdf")
+def pdf_parser():
+    ...
+
 def create_file_type_dataclass(filepath: Path):
     # Used to verify if supported file type and parse it.
     # Supported types: .txt, .md, .csv, .docx, .pdf,
@@ -16,20 +44,10 @@ def create_file_type_dataclass(filepath: Path):
 
     # Match should be to decide what content is extracted
     # based off of the extension.
-    match file_extension:
-        case '.txt':
-            with open(filepath) as f:
-                file_content = f.read()
-        case '.md':
-            ...
-        case '.csv':
-            ...
-        case '.docx':
-            ...
-        case '.pdf':
-            ...
-        case _:
-            raise TypeError(f"Don't support file extension: {file_extension}")
+    try:
+        file_content = PARSER_REGISTRY.get(file_extension)
+    except:
+        TypeError(f"Don't support file extension: {file_extension}")
         
     return FileType(filename, file_extension, file_content)
         

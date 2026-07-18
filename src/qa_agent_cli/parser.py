@@ -17,33 +17,31 @@ def register_parser(file_type):
 
 @register_parser("txt")
 def txt_file_parser():
-    ...
+    print("txt file")
 
 @register_parser("md")
 def markdown_parser():
-    ...
+    print("md file")
 
 @register_parser("csv")
 def csv_parser():
-    ...
+    print("csv file")
 
 @register_parser("docx")
 def docx_parser():
-    ...
+    print("docx file")
 
 @register_parser("pdf")
 def pdf_parser():
-    ...
+    print("pdf file")
 
 def create_file_type_dataclass(filepath: Path):
-    # Used to verify if supported file type and parse it.
+    # Verify if it a supported file type and parse it.
     # Supported types: .txt, .md, .csv, .docx, .pdf,
-    # Not supported: .json, .xlsx, .yaml
     file_extension = filepath.suffix
     filename = filepath.stem
 
-    # Match should be to decide what content is extracted
-    # based off of the extension.
+    # Use specific file ext parser function in registry
     try:
         file_content = PARSER_REGISTRY.get(file_extension)
     except:

@@ -15,38 +15,40 @@ def register_parser(file_type):
         return func
     return decorator
 
-@register_parser("txt")
-def txt_file_parser():
-    print("txt file")
+@register_parser(".txt")
+def txt_file_parser(file):
+    return f"txt file"
 
-@register_parser("md")
-def markdown_parser():
+@register_parser(".md")
+def markdown_parser(file):
     print("md file")
 
-@register_parser("csv")
-def csv_parser():
+@register_parser(".csv")
+def csv_parser(file):
     print("csv file")
 
-@register_parser("docx")
-def docx_parser():
+@register_parser(".docx")
+def docx_parser(file):
     print("docx file")
 
-@register_parser("pdf")
-def pdf_parser():
+@register_parser(".pdf")
+def pdf_parser(file):
     print("pdf file")
 
 def create_file_type_dataclass(filepath: Path):
     # Verify if it a supported file type and parse it.
     # Supported types: .txt, .md, .csv, .docx, .pdf,
+    filepath = Path(filepath)
     file_extension = filepath.suffix
     filename = filepath.stem
 
     # Use specific file ext parser function in registry
     try:
-        file_content = PARSER_REGISTRY.get(file_extension)
+        file_parser_fcn = PARSER_REGISTRY.get(file_extension)
+        file_content = file_parser_fcn(filepath)
     except:
         TypeError(f"Don't support file extension: {file_extension}")
-        
+    
     return FileType(filename, file_extension, file_content)
         
 

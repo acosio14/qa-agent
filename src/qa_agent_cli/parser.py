@@ -17,7 +17,9 @@ def register_parser(file_type):
 
 @register_parser(".txt")
 def txt_file_parser(file):
-    return f"txt file"
+    with open(file) as f:
+        file_content = f.read()
+        return file_content
 
 @register_parser(".md")
 def markdown_parser(file):

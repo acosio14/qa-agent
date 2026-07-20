@@ -6,7 +6,7 @@
 from pathlib import Path
 import logging
 from file_types import FileType
-
+from charset_normalizer import from_path, detect
 PARSER_REGISTRY = {}
 
 def register_parser(file_type):
@@ -16,14 +16,18 @@ def register_parser(file_type):
     return decorator
 
 @register_parser(".txt")
-def txt_file_parser(file):
-    with open(file) as f:
-        file_content = f.read()
-        return file_content
+def txt_file_parser(filepath):
+    with open(filepath, "rb") as f:
+        file_bytes = f.read()
+    file_encoding = detect(file_bytes)["encoding"]
+    file_content = file_bytes.decode(file_encoding)
+    return file_content 
 
 @register_parser(".md")
 def markdown_parser(file):
-    print("md file")
+    with open(file) as m:
+        file_content = m.read()
+    return file_content
 
 @register_parser(".csv")
 def csv_parser(file):
@@ -46,8 +50,8 @@ def create_file_type_dataclass(filepath: Path):
 
     # Use specific file ext parser function in registry
     try:
-        file_parser_fcn = PARSER_REGISTRY.get(file_extension)
-        file_content = file_parser_fcn(filepath)
+        file_parser = PARSER_REGISTRY.get(file_extension)
+        file_content = file_parser(filepath)
     except:
         TypeError(f"Don't support file extension: {file_extension}")
     
@@ -63,7 +67,7 @@ def parse(filepath: Path) -> dict[str]:
     elif path.is_dir():
         files = [file for file in path.iterdir()]
     else:
-        logging.error('File path cant be read as file or dir')
+        logging.error('File path cannot be read as file or dir')
         raise FileNotFoundError
 
     return [create_file_type_dataclass(file) for file in files]

@@ -6,7 +6,9 @@
 from pathlib import Path
 import logging
 from file_types import FileType
-from charset_normalizer import from_path, detect
+from charset_normalizer import detect
+from docx import Document
+
 PARSER_REGISTRY = {}
 
 def register_parser(file_type):
@@ -24,18 +26,42 @@ def txt_file_parser(filepath):
     return file_content 
 
 @register_parser(".md")
-def markdown_parser(file):
-    with open(file) as m:
-        file_content = m.read()
-    return file_content
-
-@register_parser(".csv")
-def csv_parser(file):
-    print("csv file")
+def markdown_parser(filepath):
+    with open(filepath, "r") as f:
+        file_content = f.read()
+    return file_content 
 
 @register_parser(".docx")
-def docx_parser(file):
-    print("docx file")
+def docx_parser(docx_filepath):
+    doc = Document(docx_filepath)
+    file_content = []
+
+    for p in doc.paragraphs:
+        text = p.text.strip()
+        if not text:
+            continue
+
+        style_name = p.style.name.lower()
+
+        # Handle Headings
+        if "heading 1" in style_name:
+            file_content.append(f"# {text}")
+        elif "heading 2" in style_name:
+            file_content.append(f"## {text}")
+        elif "heading 3" in style_name:
+            file_content.append(f"### {text}")
+
+        # Handle Bullet Points / Lists
+        elif "list bullet" in style_name:
+            file_content.append(f"* {text}")
+        elif "list number" in style_name:
+            file_content.append(f"1. {text}")
+
+        # Handle Normal Paragraphs
+        else:
+            file_content.append(text)
+
+    return "\n\n".join(file_content)
 
 @register_parser(".pdf")
 def pdf_parser(file):

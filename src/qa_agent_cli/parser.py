@@ -8,6 +8,7 @@ import logging
 from file_types import FileType
 from charset_normalizer import detect
 from docx import Document
+import fitz
 
 PARSER_REGISTRY = {}
 
@@ -65,7 +66,9 @@ def docx_parser(docx_filepath):
 
 @register_parser(".pdf")
 def pdf_parser(file):
-    print("pdf file")
+    doc = fitz.open(file)
+    for page in doc:
+        text = page.get_text()
 
 def create_file_type_dataclass(filepath: Path):
     # Verify if it a supported file type and parse it.

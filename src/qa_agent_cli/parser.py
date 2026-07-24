@@ -5,7 +5,7 @@
 
 from pathlib import Path
 import logging
-from file_types import FileType
+from file_types import ParsedFile
 from charset_normalizer import detect
 from docx import Document
 import fitz
@@ -24,15 +24,16 @@ def txt_file_parser(filepath):
         file_bytes = f.read()
     file_encoding = detect(file_bytes)["encoding"]
     file_content = file_bytes.decode(file_encoding)
-    return file_content 
+    chunks = "" # if file < some_size => don't chunk
+    return file_content, chunks # chunk by line numbers?
 
 @register_parser(".md")
 def markdown_parser(filepath):
     with open(filepath, "r") as f:
         file_content = f.read()
-    return file_content 
+    return file_content # Chunk by section heading
 
-@register_parser(".docx")
+@register_parser(".docx") # pages, section = paragraph?
 def docx_parser(docx_filepath):
     doc = Document(docx_filepath)
     file_content = []
@@ -69,6 +70,7 @@ def pdf_parser(file):
     doc = fitz.open(file)
     for page in doc:
         text = page.get_text()
+        # pages, sections = paragraphs?
 
 def create_file_type_dataclass(filepath: Path):
     # Verify if it a supported file type and parse it.
@@ -80,11 +82,11 @@ def create_file_type_dataclass(filepath: Path):
     # Use specific file ext parser function in registry
     try:
         file_parser = PARSER_REGISTRY.get(file_extension)
-        file_content = file_parser(filepath)
+        raw_text, chunks = file_parser(filepath)
     except:
         TypeError(f"Don't support file extension: {file_extension}")
     
-    return FileType(filename, file_extension, file_content)
+    return ParsedFile(filename, file_extension, raw_text, chunks)
         
 
 def parse(filepath: Path) -> dict[str]:

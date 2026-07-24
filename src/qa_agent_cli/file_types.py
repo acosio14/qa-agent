@@ -9,7 +9,7 @@ class Chunk:
 
 
 @dataclass
-class Document:
+class ParsedFile:
     name: str
     extension: str
     raw_text: str = ""

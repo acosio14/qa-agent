@@ -1,4 +1,4 @@
-from pydantic.dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass, Field
 
 @dataclass
 class Chunk:
@@ -13,4 +13,4 @@ class ParsedFile:
     name: str
     extension: str
     raw_text: str = ""
-    chunks: list[Chunk] = field(default_factory=list)
+    chunks: list[Chunk] = Field(default_factory=list)

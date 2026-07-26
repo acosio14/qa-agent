@@ -9,14 +9,17 @@ from file_types import ParsedFile
 from docx import Document
 from markitdown import MarkItDown
 
+SMALL_FILE_SIZE_BYTES = 5000
 
 def convert_to_markdown(filepath):
     md = MarkItDown(enable_plugins=False)
     md_text = md.convert(filepath)
     return md_text
 
-def chunk_file_content(markdown_text: str):
+def chunk_file_content(md_text: str):
+    # split into sections -> store in datastructure, list
     ...
+    
 
 def create_file_type_dataclass(filepath: Path):
     
@@ -29,13 +32,13 @@ def create_file_type_dataclass(filepath: Path):
     if file_extension not in supported_file_types:
         TypeError(f"Don't support file extension: {file_extension}")
 
-    md_text = convert_to_markdown(filepath)
-    # if len(md_text) > some_size:
-    chunks =  chunk_file_content(md_text)
-    # else { no chunks }
+    md_text = convert_to_markdown(filepath).text_content
+    chunks = [md_text]
+    if Path(md_text).stat().st_size > SMALL_FILE_SIZE_BYTES:
+        chunks =  chunk_file_content(md_text)
 
     return ParsedFile(filename, file_extension, md_text, chunks)
-        
+      
 
 def parse(filepath: Path) -> dict[str]:
     # Need to verify if its a directory or file

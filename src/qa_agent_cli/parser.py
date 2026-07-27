@@ -19,21 +19,35 @@ def convert_to_markdown(filepath):
 def chunk_file_content(md_text: str):
     # split into sections -> store in datastructure, list
     headers = ["#", "##"]
-    if headers in md_text:
+    if headers[0] in md_text or headers[1] in md_text:
         section_idx = [
             idx
             for idx, char in enumerate(md_text)
             if char in headers
-        ] 
+        ]
+        sections = [md_text[i:i+1] for i in section_idx]
     else:
         md_lines = md_text.split("\n")
+        print(md_lines)
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)
-            if line.strip() == ""
+            if line.strip() == ''
         ]
+        chunks = []
+        line_list = []
+        for idx, line in enumerate(md_lines):
+            if idx not in section_idx:
+                line_list.append(line)                
+            elif idx in section_idx:
+                chunks.append(('\n').join(line_list))
+                line_list = []
+            else:
+                chunks.append('\n').join(line_list)
 
-    return [md_text[i:i+1] for i in section_idx]
+        sections = chunks
+
+    return sections
 
 
 def create_file_type_dataclass(filepath: Path):

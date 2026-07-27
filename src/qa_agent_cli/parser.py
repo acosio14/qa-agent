@@ -30,7 +30,7 @@ def chunk_file_content(md_text: str):
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)
-            if line.strip() is ""
+            if line.strip() == ""
         ]
 
     return [md_text[i:i+1] for i in section_idx]

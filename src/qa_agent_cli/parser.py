@@ -18,8 +18,20 @@ def convert_to_markdown(filepath):
 
 def chunk_file_content(md_text: str):
     # split into sections -> store in datastructure, list
-    ...
     
+    section_indx = []
+    headers = ["#", "##"]
+    for index, character in enumerate(md_text):
+        if character in headers:
+            section_indx.append(index)
+        # elif "bullets"
+
+    sections = []
+    for i in section_indx:
+        sections.append(md_text[i:i+1])
+
+    return sections
+
 
 def create_file_type_dataclass(filepath: Path):
     

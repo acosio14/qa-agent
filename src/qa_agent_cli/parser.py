@@ -27,7 +27,7 @@ def chunk_file_content(md_text: str):
         ]
         chunks = [
             Chunk(('\n').join(md_lines[section_idx[i]:section_idx[i+1]]))
-            for i, idx in enumerate(section_idx[:11])
+            for i, idx in enumerate(section_idx[:len(section_idx)-1])
         ]
     else:
         md_lines = md_text.split("\n")

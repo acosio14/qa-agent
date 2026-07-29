@@ -5,11 +5,10 @@
 
 from pathlib import Path
 import logging
-from file_types import ParsedFile
-from docx import Document
+from file_types import ParsedFile, Chunk
 from markitdown import MarkItDown
 
-SMALL_FILE_SIZE_BYTES = 5000
+FILE_SIZE_2_KILOBYTES = 2000
 
 def convert_to_markdown(filepath):
     md = MarkItDown(enable_plugins=False)
@@ -20,15 +19,18 @@ def chunk_file_content(md_text: str):
     # split into sections -> store in datastructure, list
     headers = ["#", "##"]
     if headers[0] in md_text or headers[1] in md_text:
+        md_lines = md_text.split("\n")
         section_idx = [
             idx
-            for idx, char in enumerate(md_text)
-            if char in headers
+            for idx, line in enumerate(md_lines)
+            if '#' in line
         ]
-        sections = [md_text[i:i+1] for i in section_idx]
+        chunks = [
+            Chunk(('\n').join(md_lines[section_idx[i]:section_idx[i+1]]))
+            for i, idx in enumerate(section_idx[:11])
+        ]
     else:
         md_lines = md_text.split("\n")
-        print(md_lines)
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)
@@ -40,14 +42,16 @@ def chunk_file_content(md_text: str):
             if idx not in section_idx:
                 line_list.append(line)                
             elif idx in section_idx:
-                chunks.append(('\n').join(line_list))
+                chunks.append(
+                    Chunk(('\n').join(line_list))
+                )
                 line_list = []
             else:
-                chunks.append('\n').join(line_list)
+                chunks.append(
+                    Chunk(('\n').join(line_list))
+                )
 
-        sections = chunks
-
-    return sections
+    return chunks
 
 
 def create_file_type_dataclass(filepath: Path):
@@ -62,8 +66,8 @@ def create_file_type_dataclass(filepath: Path):
         TypeError(f"Don't support file extension: {file_extension}")
 
     md_text = convert_to_markdown(filepath).text_content
-    chunks = [md_text]
-    if Path(md_text).stat().st_size > SMALL_FILE_SIZE_BYTES:
+    chunks = [Chunk(md_text)]
+    if Path(filepath).stat().st_size > FILE_SIZE_2_KILOBYTES:
         chunks =  chunk_file_content(md_text)
 
     return ParsedFile(filename, file_extension, md_text, chunks)

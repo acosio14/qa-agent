@@ -16,21 +16,27 @@ def convert_to_markdown(filepath):
     return md_text
 
 def chunk_file_content(md_text: str):
-    # split into sections -> store in datastructure, list
-    headers = ["#", "##"]
-    if headers[0] in md_text or headers[1] in md_text:
-        md_lines = md_text.split("\n")
+
+    md_lines = md_text.split("\n")
+    has_header = False
+    for line in md_lines:
+        if len(line) > 0 and line[0] == '#' and '# ' in line:
+            has_header = True
+
+    if has_header:
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)
-            if '#' in line
+            if '# ' in line
         ]
         chunks = [
-            Chunk(('\n').join(md_lines[section_idx[i]:section_idx[i+1]]))
-            for i, idx in enumerate(section_idx[:len(section_idx)-1])
+            Chunk(
+                text=('\n').join(md_lines[section_idx[i]:section_idx[i+1]]),
+                section=md_lines[section_idx[i]],
+            )
+            for i, _ in enumerate(section_idx[:len(section_idx)-1])
         ]
     else:
-        md_lines = md_text.split("\n")
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)

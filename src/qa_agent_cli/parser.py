@@ -67,7 +67,7 @@ def create_file_type_dataclass(filepath: Path):
     filename = filepath.stem
 
     # Verify if file type supported
-    supported_file_types = [".txt", ".pptx", ".docx", ".xlsx", ".pdf", ".md"]
+    supported_file_types = [".txt", ".docx", ".pdf", ".md"]
     if file_extension not in supported_file_types:
         TypeError(f"Don't support file extension: {file_extension}")
 

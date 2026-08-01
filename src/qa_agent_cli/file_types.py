@@ -14,3 +14,5 @@ class ParsedFile:
     extension: str
     raw_text: str = ""
     chunks: list[Chunk] = Field(default_factory=list)
+    ok: bool = True
+    error: str | None = None

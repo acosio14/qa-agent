@@ -5,10 +5,11 @@
 
 from pathlib import Path
 import logging
-from file_types import ParsedFile, Chunk
+from qa_agent_cli.file_types import ParsedFile, Chunk
 from markitdown import MarkItDown
 
-FILE_SIZE_2_KILOBYTES = 2000
+CHUNK_SIZE_THRESHOLD_BYTES = 2048
+SUPPORTED_FILE_TYPES = {".txt", ".docx", ".pdf", ".md"}
 
 def convert_to_markdown(filepath):
     md = MarkItDown(enable_plugins=False)
@@ -18,75 +19,96 @@ def convert_to_markdown(filepath):
 def chunk_file_content(md_text: str):
 
     md_lines = md_text.split("\n")
-    has_header = False
-    for line in md_lines:
-        if len(line) > 0 and line[0] == '#' and '# ' in line:
-            has_header = True
+    has_header = any(line.strip().startswith('#') for line in md_lines)
 
     if has_header:
         section_idx = [
             idx
             for idx, line in enumerate(md_lines)
-            if '# ' in line
+            if line.strip().startswith('#')
         ]
-        chunks = [
-            Chunk(
-                text=('\n').join(md_lines[section_idx[i]:section_idx[i+1]]),
-                section=md_lines[section_idx[i]],
+        section_idx.append(len(md_lines))
+
+        chunks = []
+        # Content before the first header would otherwise be dropped.
+        if section_idx[0] > 0:
+            chunks.append(
+                Chunk(text=('\n').join(md_lines[:section_idx[0]]))
             )
-            for i, _ in enumerate(section_idx[:len(section_idx)-1])
-        ]
+
+        for start, end in zip(section_idx, section_idx[1:]):
+            chunks.append(
+                Chunk(
+                    text=('\n').join(md_lines[start:end]),
+                    section=md_lines[start].strip(),
+                )
+            )
     else:
-        section_idx = [
+        blank_idx = {
             idx
             for idx, line in enumerate(md_lines)
             if line.strip() == ''
-        ]
+        }
+
         chunks = []
         line_list = []
         for idx, line in enumerate(md_lines):
-            if idx not in section_idx:
-                line_list.append(line)                
-            elif idx in section_idx:
-                chunks.append(
-                    Chunk(('\n').join(line_list))
-                )
+            if idx not in blank_idx:
+                line_list.append(line)
+            elif line_list:
+                chunks.append(Chunk(('\n').join(line_list)))
                 line_list = []
-            else:
-                chunks.append(
-                    Chunk(('\n').join(line_list))
-                )
+        if line_list:
+            chunks.append(Chunk(('\n').join(line_list)))
 
     return chunks
 
 
-def create_file_type_dataclass(filepath: Path):
-    
+def create_file_type_dataclass(filepath: str | Path) -> ParsedFile:
     filepath = Path(filepath)
     file_extension = filepath.suffix
     filename = filepath.stem
+    try:
+        # Verify if file type supported (Wrong type guardrail)
+        if file_extension.lower() not in SUPPORTED_FILE_TYPES:
+            raise TypeError(f"Don't support file extension: {file_extension}")
+        if filepath.stat().st_size <= 0:
+            raise ValueError(f"File is empty.")
 
-    # Verify if file type supported
-    supported_file_types = [".txt", ".docx", ".pdf", ".md"]
-    if file_extension not in supported_file_types:
-        TypeError(f"Don't support file extension: {file_extension}")
+        md_text = convert_to_markdown(filepath).text_content
+        chunks = [Chunk(md_text)]
+        if filepath.stat().st_size > CHUNK_SIZE_THRESHOLD_BYTES:
+            chunks = chunk_file_content(md_text)
 
-    md_text = convert_to_markdown(filepath).text_content
-    chunks = [Chunk(md_text)]
-    if Path(filepath).stat().st_size > FILE_SIZE_2_KILOBYTES:
-        chunks =  chunk_file_content(md_text)
+        return ParsedFile(filename, file_extension, md_text, chunks)
+    except Exception as e:
+        # Record the failure on the file instead of raising: one bad file
+        # must not abort a whole batch, and it must not vanish silently.
+        logging.exception(f"The file {filepath} failed with exception {e}")
+        return ParsedFile(
+            name=filename,
+            extension=file_extension,
+            ok=False,
+            error=str(e),
+        )
 
-    return ParsedFile(filename, file_extension, md_text, chunks)
-      
-
-def parse(filepath: Path) -> dict[str]:
+def parse(filepath: str | Path) -> list[ParsedFile]:
     # Need to verify if its a directory or file
     # if directory, then loop through each file and make dict of each
+    # (Not file or directory guardrail)
     path = Path(filepath)
     if path.is_file():
-        files = [filepath] # should be a file
+        files = [path] # should be a file
     elif path.is_dir():
-        files = [file for file in path.iterdir()]
+        # Skip incidental noise (hidden/system files, subdirectories) so it is
+        # not mistaken for a parse failure and does not clutter the results.
+        files = [
+            file
+            for file in path.iterdir()
+            if file.is_file()
+            and file.suffix.lower() in SUPPORTED_FILE_TYPES
+            and not file.name.startswith(".")
+        ]
     else:
         logging.error('File path cannot be read as file or dir')
         raise FileNotFoundError

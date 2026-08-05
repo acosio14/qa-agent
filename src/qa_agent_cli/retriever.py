@@ -4,7 +4,7 @@ from dataclasses import asdict
 import bm25s
 
 
-def retrieve_top_k_chunks(k: int, parsed_files: list[ParsedFile], question: str) -> list[ParsedFile]:
+def retrieve_top_k_chunks(parsed_files: list[ParsedFile], question: str, k: int = 2) -> dict[str]:
 
 
     question_tokens = bm25s.tokenize(question)
@@ -15,6 +15,6 @@ def retrieve_top_k_chunks(k: int, parsed_files: list[ParsedFile], question: str)
     retriever = bm25s.BM25(corpus=chunks)
     retriever.index(chunk_tokens)
 
-    chunk_dict, score = retriever.retrieve(question_tokens, k=2)
+    chunk_dict, score = retriever.retrieve(question_tokens, k)
 
-
+    return chunk_dict

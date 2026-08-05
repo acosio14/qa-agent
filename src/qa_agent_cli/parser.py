@@ -16,7 +16,7 @@ def convert_to_markdown(filepath):
     md_text = md.convert(filepath)
     return md_text
 
-def chunk_file_content(md_text: str):
+def chunk_file_content(filename: str, md_text: str):
 
     md_lines = md_text.split("\n")
     has_header = any(line.strip().startswith('#') for line in md_lines)
@@ -33,12 +33,13 @@ def chunk_file_content(md_text: str):
         # Content before the first header would otherwise be dropped.
         if section_idx[0] > 0:
             chunks.append(
-                Chunk(text=('\n').join(md_lines[:section_idx[0]]))
+                Chunk(filename=filename, text=('\n').join(md_lines[:section_idx[0]]))
             )
 
         for start, end in zip(section_idx, section_idx[1:]):
             chunks.append(
                 Chunk(
+                    filename=filename,
                     text=('\n').join(md_lines[start:end]),
                     section=md_lines[start].strip(),
                 )
@@ -56,10 +57,16 @@ def chunk_file_content(md_text: str):
             if idx not in blank_idx:
                 line_list.append(line)
             elif line_list:
-                chunks.append(Chunk(('\n').join(line_list)))
+                chunks.append(Chunk(
+                    filename=filename,
+                    text=('\n').join(line_list)),
+                )
                 line_list = []
         if line_list:
-            chunks.append(Chunk(('\n').join(line_list)))
+            chunks.append(Chunk(
+                filename=filename,
+                text=('\n').join(line_list)),
+            )
 
     return chunks
 
@@ -76,9 +83,9 @@ def create_file_type_dataclass(filepath: str | Path) -> ParsedFile:
             raise ValueError(f"File is empty.")
 
         md_text = convert_to_markdown(filepath).text_content
-        chunks = [Chunk(md_text)]
+        chunks = [Chunk(filename=filename, text=md_text)]
         if filepath.stat().st_size > CHUNK_SIZE_THRESHOLD_BYTES:
-            chunks = chunk_file_content(md_text)
+            chunks = chunk_file_content(filename, md_text)
 
         return ParsedFile(filename, file_extension, md_text, chunks)
     except Exception as e:

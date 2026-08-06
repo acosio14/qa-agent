@@ -4,7 +4,7 @@ from dataclasses import asdict
 import bm25s
 
 
-def retrieve_top_k_chunks(parsed_files: list[ParsedFile], question: str, k: int = 2) -> dict[str]:
+def retrieve_top_k_chunks(parsed_files: list[ParsedFile], question: str, k: int) -> dict[str]:
 
 
     question_tokens = bm25s.tokenize(question)

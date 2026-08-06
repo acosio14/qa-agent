@@ -8,13 +8,18 @@ def retrieve_top_k_chunks(parsed_files: list[ParsedFile], question: str, k: int)
 
 
     question_tokens = bm25s.tokenize(question)
-    
-    chunks = [asdict(file.chunks) for file in parsed_files]
+
+    chunks = [
+        asdict(chunk)
+        for file in parsed_files
+        for chunk in file.chunks
+    ]
+
     chunk_tokens = bm25s.tokenize(chunk["text"] for chunk in chunks)
 
     retriever = bm25s.BM25(corpus=chunks)
     retriever.index(chunk_tokens)
 
-    chunk_dict, score = retriever.retrieve(question_tokens, k)
+    results = retriever.retrieve(question_tokens, k=k, return_as="documents")
 
-    return chunk_dict
+    return results

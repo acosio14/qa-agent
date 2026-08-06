@@ -28,7 +28,7 @@ def main():
 
     parsed_files = file_parser.parse(args.path)
     top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, args.question, k=1)
-    system_prompt, user_prompt = formatter.format(top_k_chunks, args.question)
+    system_prompt, user_prompt = formatter.format(top_k_chunks, args.question, model)
     response = llm.QAAssistant(system_prompt, user_prompt, model).GetAnswer()
 
     print(response)

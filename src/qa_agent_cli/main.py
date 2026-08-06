@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
-import qa_agent_cli.parser as parser, formatter, llm
+import qa_agent_cli.parser as file_parser
+from qa_agent_cli import formatter, llm, retriever
 
 def main():
     parser = argparse.ArgumentParser(
@@ -25,9 +26,10 @@ def main():
     if args.model:
         model = free_models.get(args.model)
 
-    files_dict = parser.parse(args.path)
-    files, question = formatter.format(files_dict, args.question)
-    response = llm.QAAssistant(files, question, model).GetAnswer()
+    parsed_files = file_parser.parse(args.path)
+    top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, args.question, k=1)
+    system_prompt, user_prompt = formatter.format(top_k_chunks, args.question)
+    response = llm.QAAssistant(system_prompt, user_prompt, model).GetAnswer()
 
     print(response)
     

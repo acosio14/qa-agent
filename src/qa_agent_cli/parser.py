@@ -5,7 +5,7 @@
 
 from pathlib import Path
 import logging
-from qa_agent_cli.file_types import ParsedFile, Chunk
+from file_types import ParsedFile, Chunk
 from markitdown import MarkItDown
 
 CHUNK_SIZE_THRESHOLD_BYTES = 2048

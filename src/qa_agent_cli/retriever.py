@@ -1,5 +1,5 @@
 # Takes question and stored chunks -> creates top-k chunks
-from qa_agent_cli.file_types import ParsedFile, Chunk
+from file_types import ParsedFile
 from dataclasses import asdict
 import bm25s
 

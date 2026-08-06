@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
-import qa_agent_cli.parser as file_parser
-from qa_agent_cli import formatter, llm, retriever
+import parser as file_parser
+import formatter, llm, retriever
 
 def main():
     parser = argparse.ArgumentParser(

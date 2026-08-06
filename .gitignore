@@ -219,3 +219,5 @@ __marimo__/
 
 # Test Files
 test_files/
+
+.DS_Store

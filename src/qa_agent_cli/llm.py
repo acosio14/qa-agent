@@ -10,12 +10,14 @@ class QAAssistant:
         self,
         system_prompt: str,
         user_prompt: str,
-        model: str,
+        default_model: str,
+        fallback_models: list[str],
     ) -> None:
         
         self.system_prompt = system_prompt
         self.user_prompt = user_prompt
-        self.model: str = model
+        self.model = default_model
+        self.fallback_models = fallback_models
 
     def GetAnswer(self) -> str:
 

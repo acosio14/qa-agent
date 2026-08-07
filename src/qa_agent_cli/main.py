@@ -22,14 +22,15 @@ def main():
         "nemotron-3-ultra": "nvidia/nemotron-3-ultra-550b-a55b:free",
         "nemotron-3-nano-omni": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
     }
-    model = free_models["gemma-4-31b"]
+    default_model = free_models["gemma-4-31b"]
+    fallback_models = list(free_models.values())[1:]
     if args.model:
-        model = free_models.get(args.model)
+        default_model = free_models.get(args.model)
 
     parsed_files = file_parser.parse(args.path)
     top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, args.question, k=1)
-    system_prompt, user_prompt = formatter.format(top_k_chunks, args.question, model)
-    response = llm.QAAssistant(system_prompt, user_prompt, model).GetAnswer()
+    system_prompt, user_prompt = formatter.format(top_k_chunks, args.question, default_model)
+    response = llm.QAAssistant(system_prompt, user_prompt, default_model, fallback_models).GetAnswer()
 
     print(response)
     

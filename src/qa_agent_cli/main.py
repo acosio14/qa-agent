@@ -29,6 +29,55 @@ FREE_MODELS = {
 }
 DEFAULT_MODEL_ALIAS = "gemma-4-31b"
 
+RETRIEVAL_K = 1  # number of chunks retrieved to build the context
+
+
+def resolve_models(model_alias: str | None) -> tuple[str, list[str]]:
+    """Return ``(default_model, fallback_models)`` for the given alias.
+
+    ``model_alias`` is the value passed via ``--model`` (or ``None`` for the
+    built-in default). Fallbacks are every other model, so the default is never
+    listed as its own fallback. Raises ``ValueError`` for an unknown alias.
+    """
+    if model_alias is None:
+        default_model = FREE_MODELS[DEFAULT_MODEL_ALIAS]
+    elif model_alias in FREE_MODELS:
+        default_model = FREE_MODELS[model_alias]
+    else:
+        raise ValueError(
+            f"unknown model '{model_alias}'. Choose from: {', '.join(FREE_MODELS)}"
+        )
+
+    fallback_models = [m for m in FREE_MODELS.values() if m != default_model]
+    return default_model, fallback_models
+
+
+def run_pipeline(
+    path: str, question: str, default_model: str, fallback_models: list[str]
+) -> tuple[str, str | None]:
+    """Run parse -> retrieve -> format -> answer, returning (answer, model).
+
+    This is the CLI-free core: it takes plain inputs and returns the answer plus
+    the model that actually produced it. It raises ``QAAssistantError`` or file
+    errors on failure; the caller is responsible for turning those into exit
+    codes and user-facing messages.
+    """
+    logger.info("Parsing input path: %s", path)
+    parsed_files = file_parser.parse(path)
+
+    logger.info("Retrieving top chunks for the question")
+    top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, question, k=RETRIEVAL_K)
+
+    system_prompt, user_prompt = formatter.format_prompts(top_k_chunks, question)
+
+    logger.info(
+        "Asking model (default=%s, %d fallbacks available)",
+        default_model, len(fallback_models),
+    )
+    assistant = llm.QAAssistant(system_prompt, user_prompt, default_model, fallback_models)
+    answer = assistant.get_answer()
+    return answer, assistant.answering_model
+
 
 def _configure_logging(level: str, log_file: str | None) -> None:
     """Send logs to stderr (and optionally a file), keeping stdout for the answer."""
@@ -93,37 +142,16 @@ def main() -> int:
         )
         return 2
 
-    default_model = FREE_MODELS[DEFAULT_MODEL_ALIAS]
-    fallback_models = [m for m in FREE_MODELS.values() if m != default_model]
-    if args.model:
-        if args.model not in FREE_MODELS:
-            logger.error("Unknown model requested: %s", args.model)
-            parser.error(
-                f"unknown model '{args.model}'. Choose from: {', '.join(FREE_MODELS)}"
-            )
-        default_model = FREE_MODELS[args.model]
-        fallback_models = [m for m in FREE_MODELS.values() if m != default_model]
+    try:
+        default_model, fallback_models = resolve_models(args.model)
+    except ValueError as e:
+        logger.error("%s", e)
+        parser.error(str(e))  # prints usage + message, exits with code 2
 
     try:
-        logger.info("Parsing input path: %s", args.path)
-        parsed_files = file_parser.parse(args.path)
-
-        logger.info("Retrieving top chunks for the question")
-        top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, args.question, k=1)
-
-        system_prompt, user_prompt = formatter.format_prompts(
-            top_k_chunks, args.question
+        answer, answering_model = run_pipeline(
+            args.path, args.question, default_model, fallback_models
         )
-
-        logger.info(
-            "Asking model (default=%s, %d fallbacks available)",
-            default_model, len(fallback_models),
-        )
-        assistant = llm.QAAssistant(
-            system_prompt, user_prompt, default_model, fallback_models
-        )
-        response = assistant.get_answer()
-
     except llm.QAAssistantError as e:
         logger.error("The model pipeline could not produce an answer: %s", e)
         print(f"Sorry, I couldn't answer that: {e}", file=sys.stderr)
@@ -141,8 +169,8 @@ def main() -> int:
         print(f"An unexpected error occurred: {e}", file=sys.stderr)
         return 1
 
-    print(response)
-    print(f"Model: {assistant.answering_model}")
+    print(answer)
+    print(f"Model: {answering_model}")
     logger.info("Done")
     return 0
 

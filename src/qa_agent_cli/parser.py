@@ -9,7 +9,7 @@ from file_types import ParsedFile, Chunk
 from markitdown import MarkItDown
 
 CHUNK_SIZE_THRESHOLD_BYTES = 2048
-SUPPORTED_FILE_TYPES = {".txt", ".docx", ".pdf", ".md"}
+SUPPORTED_FILE_TYPES = {".txt", ".docx", ".pdf", ".md"} sdf 
 
 def convert_to_markdown(filepath):
     md = MarkItDown(enable_plugins=False)

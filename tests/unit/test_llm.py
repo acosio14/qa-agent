@@ -178,11 +178,12 @@ class TestGetAnswerSuccess:
         assistant, tried = make_assistant(monkeypatch, [resp("hello")])
 
         # Act
-        answer = assistant.GetAnswer()
+        answer = assistant.get_answer()
 
         # Assert
         assert answer == "hello"
         assert tried == ["m1"]
+        assert assistant.answering_model == "m1"
 
     def test_retries_same_model_then_succeeds(self, monkeypatch):
         # Arrange
@@ -190,7 +191,7 @@ class TestGetAnswerSuccess:
         assistant, tried = make_assistant(monkeypatch, script)
 
         # Act
-        answer = assistant.GetAnswer()
+        answer = assistant.get_answer()
 
         # Assert
         assert answer == "ok"
@@ -203,11 +204,12 @@ class TestGetAnswerSuccess:
         assistant, tried = make_assistant(monkeypatch, script, fallbacks=["m2"])
 
         # Act
-        answer = assistant.GetAnswer()
+        answer = assistant.get_answer()
 
         # Assert
         assert answer == "ok"
         assert tried == ["m1", "m1", "m1", "m2"]  # 3 tries cap, then next model
+        assert assistant.answering_model == "m2"  # the fallback actually answered
 
     def test_reroute_error_switches_model_without_retrying(self, monkeypatch):
         # Arrange
@@ -215,7 +217,7 @@ class TestGetAnswerSuccess:
         assistant, tried = make_assistant(monkeypatch, script, fallbacks=["m2"])
 
         # Act
-        answer = assistant.GetAnswer()
+        answer = assistant.get_answer()
 
         # Assert
         assert answer == "ok"
@@ -230,7 +232,7 @@ class TestGetAnswerFailure:
 
         # Act / Assert
         with pytest.raises(QAAssistantError) as exc:
-            assistant.GetAnswer()
+            assistant.get_answer()
         assert "Unrecoverable" in str(exc.value)
         assert tried == ["m1"]  # fallbacks never attempted
 
@@ -244,9 +246,10 @@ class TestGetAnswerFailure:
 
         # Act / Assert
         with pytest.raises(QAAssistantError) as exc:
-            assistant.GetAnswer()
+            assistant.get_answer()
         assert "All models failed" in str(exc.value)
         assert tried == ["m1", "m2"]
+        assert assistant.answering_model is None  # nothing answered
 
     def test_unusable_response_fails_without_trying_fallbacks(self, monkeypatch):
         # Arrange
@@ -254,5 +257,5 @@ class TestGetAnswerFailure:
 
         # Act / Assert
         with pytest.raises(QAAssistantError):
-            assistant.GetAnswer()
+            assistant.get_answer()
         assert tried == ["m1"]  # validation failure is fatal, not re-routed

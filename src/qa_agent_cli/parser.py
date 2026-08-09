@@ -8,6 +8,8 @@ import logging
 from .file_types import ParsedFile, Chunk
 from markitdown import MarkItDown
 
+logger = logging.getLogger(__name__)
+
 CHUNK_SIZE_THRESHOLD_BYTES = 2048
 SUPPORTED_FILE_TYPES = {".txt", ".docx", ".pdf", ".md"}
 
@@ -91,7 +93,9 @@ def create_file_type_dataclass(filepath: str | Path) -> ParsedFile:
     except Exception as e:
         # Record the failure on the file instead of raising: one bad file
         # must not abort a whole batch, and it must not vanish silently.
-        logging.exception(f"The file {filepath} failed with exception {e}")
+        # This is an expected outcome (recorded on ParsedFile.error), so log a
+        # concise warning rather than a full ERROR-level stack trace.
+        logger.warning("Could not parse %s: %s", filepath, e)
         return ParsedFile(
             name=filename,
             extension=file_extension,
@@ -117,7 +121,7 @@ def parse(filepath: str | Path) -> list[ParsedFile]:
             and not file.name.startswith(".")
         ]
     else:
-        logging.error('File path cannot be read as file or dir')
-        raise FileNotFoundError
+        logger.error("Path cannot be read as a file or directory: %s", filepath)
+        raise FileNotFoundError(f"No such file or directory: {filepath}")
 
     return [create_file_type_dataclass(file) for file in files]

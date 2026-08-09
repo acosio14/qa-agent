@@ -79,8 +79,11 @@ class QAAssistant:
         self.user_prompt = user_prompt
         self.model = default_model
         self.fallback_models = fallback_models
+        # The model that actually produced the answer (set by get_answer);
+        # may be a fallback rather than the default if the default failed.
+        self.answering_model: str | None = None
 
-    def GetAnswer(self) -> str:
+    def get_answer(self) -> str:
         """Return a validated answer, trying the default model then fallbacks.
 
         For each model we retry up to ``MAX_RETRIES`` times on transient
@@ -99,6 +102,7 @@ class QAAssistant:
                         response = self._send(open_router, model)
                         answer = self._validate(response, model)
                         logger.info("Usable answer received from '%s'", model)
+                        self.answering_model = model
                         return answer
                     except QAAssistantError:
                         # Unusable response -> fail immediately (no retry/reroute).

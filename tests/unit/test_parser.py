@@ -254,10 +254,11 @@ class TestCreateFileTypeDataclass:
 class TestChunkFileContentHeaders:
     def test_content_before_first_header_kept_as_preamble(self):
         # Arrange
+        filename = "test_file"
         text = "intro line\n# H1\nbody a\n## H2\nbody b"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert chunks[0].section is None
@@ -266,10 +267,11 @@ class TestChunkFileContentHeaders:
 
     def test_no_preamble_when_content_starts_with_header(self):
         # Arrange
+        filename = "test_file"
         text = "# H1\nbody a\n# H2\nbody b"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert [c.section for c in chunks] == ["# H1", "# H2"]
@@ -278,10 +280,11 @@ class TestChunkFileContentHeaders:
     def test_final_header_section_does_not_index_error(self):
         # Arrange
         # Regression: the last section previously read one past the list end.
+        filename = "test_file"
         text = "# Only\nlast line"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert len(chunks) == 1
@@ -291,20 +294,22 @@ class TestChunkFileContentHeaders:
 class TestChunkFileContentBlankLines:
     def test_splits_paragraphs_on_blank_lines(self):
         # Arrange
+        filename = "test_file"
         text = "Para one\nline two\n\nPara two"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert [c.text for c in chunks] == ["Para one\nline two", "Para two"]
 
     def test_leading_trailing_and_repeated_blanks_produce_no_empty_chunks(self):
         # Arrange
+        filename = "test_file"
         text = "\n\nPara one\nline two\n\n\nPara two\n"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert [c.text for c in chunks] == ["Para one\nline two", "Para two"]
@@ -312,10 +317,11 @@ class TestChunkFileContentBlankLines:
 
     def test_single_paragraph_without_trailing_newline(self):
         # Arrange
+        filename = "test_file"
         text = "just one paragraph"
 
         # Act
-        chunks = chunk_file_content(text)
+        chunks = chunk_file_content(filename, text)
 
         # Assert
         assert len(chunks) == 1

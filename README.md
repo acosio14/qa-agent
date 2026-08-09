@@ -31,19 +31,19 @@ Install straight from GitHub with [uv](https://docs.astral.sh/uv/) (recommended)
 this exposes a global `qa-agent` command:
 
 ```bash
-uv tool install "git+https://github.com/<owner>/qa-agent"
+uv tool install "git+https://github.com/acosio14/qa-agent"
 ```
 
 Or with pipx:
 
 ```bash
-pipx install "git+https://github.com/<owner>/qa-agent"
+pipx install "git+https://github.com/acosio14/qa-agent"
 ```
 
 From a local clone:
 
 ```bash
-git clone https://github.com/<owner>/qa-agent
+git clone https://github.com/acosio14/qa-agent
 cd qa-agent
 uv tool install .        # install the command
 # or: uv sync            # dev setup (project + dev deps in a venv)
@@ -73,8 +73,8 @@ qa-agent <path> "<question>" [--model ALIAS] [--log-level LEVEL] [--log-file FIL
 - `path` — a file or a directory of files to search (`.txt`, `.md`, `.docx`, `.pdf`).
 - `question` — the question to answer, in quotes.
 - `--model` — optional model alias (see below). Defaults to `gemma-4-31b`.
-- `--log-level` — `DEBUG`/`INFO`/`WARNING`/`ERROR`/`CRITICAL` (default `INFO`); logs go to stderr.
-- `--log-file` — also write logs to this file.
+- `--log-level` — `DEBUG`/`INFO`/`WARNING`/`ERROR`/`CRITICAL` (default `INFO`).
+- `--log-file` — where to write logs (default: `~/.qa-agent/qa-agent.log`).
 
 Example:
 
@@ -82,8 +82,9 @@ Example:
 qa-agent ./docs "What is the deployment process?"
 ```
 
-The answer is printed to stdout; diagnostics go to stderr, so you can safely pipe or
-capture just the answer.
+The terminal stays clean: only the answer is printed to stdout (and any error
+message to stderr). All logs — including third-party libraries — go to the log file
+(`~/.qa-agent/qa-agent.log` by default), not the terminal.
 
 ### Model aliases
 

@@ -1,5 +1,3 @@
-import pytest
-
 from qa_agent_cli.file_types import ParsedFile, Chunk
 from qa_agent_cli.retriever import retrieve_top_k_chunks
 
@@ -83,11 +81,44 @@ class TestRetrieveTopK:
         }
 
 
-class TestRetrieveErrors:
-    def test_k_larger_than_corpus_raises(self):
+class TestRetrieveEdgeCases:
+    def test_k_larger_than_corpus_returns_all_chunks(self):
         # Arrange
         pf = make_file("doc", "first chunk", "second chunk")
 
-        # Act / Assert
-        with pytest.raises(ValueError):
-            retrieve_top_k_chunks([pf], "chunk", k=5)
+        # Act
+        results = retrieve_top_k_chunks([pf], "chunk", k=5)
+
+        # Assert
+        assert results.shape == (1, 2)  # clamped to the two available chunks
+
+    def test_no_files_returns_empty_result(self):
+        # Arrange / Act
+        results = retrieve_top_k_chunks([], "anything", k=1)
+
+        # Assert
+        assert results.shape == (1, 0)
+        assert len(results[0]) == 0
+
+    def test_failed_files_are_ignored(self):
+        # Arrange
+        good = make_file("good", "python programming language")
+        failed = ParsedFile(
+            name="bad", extension=".txt", ok=False, error="File is empty.", chunks=[]
+        )
+
+        # Act
+        results = retrieve_top_k_chunks([failed, good], "python", k=1)
+
+        # Assert
+        assert results[0][0]["text"] == "python programming language"
+
+    def test_non_positive_k_returns_empty_result(self):
+        # Arrange
+        pf = make_file("doc", "some chunk")
+
+        # Act
+        results = retrieve_top_k_chunks([pf], "chunk", k=0)
+
+        # Assert
+        assert results.shape == (1, 0)

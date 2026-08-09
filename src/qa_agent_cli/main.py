@@ -64,8 +64,8 @@ def main() -> int:
         logger.info("Retrieving top chunks for the question")
         top_k_chunks = retriever.retrieve_top_k_chunks(parsed_files, args.question, k=1)
 
-        system_prompt, user_prompt = formatter.format(
-            top_k_chunks, args.question, default_model
+        system_prompt, user_prompt = formatter.format_prompts(
+            top_k_chunks, args.question
         )
 
         logger.info(
@@ -94,6 +94,7 @@ def main() -> int:
         return 1
 
     print(response)
+    print(f"Model: {default_model}")
     logger.info("Done")
     return 0
 

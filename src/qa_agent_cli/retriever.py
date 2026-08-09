@@ -1,5 +1,5 @@
 # Takes question and stored chunks -> creates top-k chunks
-from .file_types import ParsedFile
+from file_types import ParsedFile
 from dataclasses import asdict
 import bm25s
 

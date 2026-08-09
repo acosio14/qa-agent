@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from enum import Enum, auto
@@ -7,6 +8,8 @@ import openrouter.errors as errors
 from dotenv import load_dotenv
 
 load_dotenv()  # does this need to cached?
+
+logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 3  # per-model attempts for transient errors
 
@@ -91,17 +94,21 @@ class QAAssistant:
             for model in models:
                 for attempt in range(1, MAX_RETRIES + 1):
                     try:
+                        logger.info("Requesting answer from '%s' (attempt %d/%d)",
+                                    model, attempt, MAX_RETRIES)
                         response = self._send(open_router, model)
-                        return self._validate(response, model)
+                        answer = self._validate(response, model)
+                        logger.info("Usable answer received from '%s'", model)
+                        return answer
                     except QAAssistantError:
                         # Unusable response -> fail immediately (no retry/reroute).
                         raise
                     except (errors.OpenRouterError, errors.NoResponseError) as e:
                         last_error = e
                         action = _classify(e)
-                        print(
-                            f"[llm] model={model} attempt={attempt} "
-                            f"error={type(e).__name__} action={action.name}"
+                        logger.warning(
+                            "model=%s attempt=%d/%d error=%s -> %s",
+                            model, attempt, MAX_RETRIES, type(e).__name__, action.name,
                         )
 
                         if action is _ErrorAction.FAIL:

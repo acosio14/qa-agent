@@ -15,26 +15,28 @@ only that context — with automatic retry/fallback across models.
 
 ## Install
 
-Using [uv](https://docs.astral.sh/uv/) (recommended):
+The project is distributed via this Git repository (not yet published to PyPI).
+
+Install straight from GitHub with [uv](https://docs.astral.sh/uv/) (recommended) —
+this exposes a global `qa-agent` command:
 
 ```bash
-# Install as a global tool, exposing the `qa-agent` command
-uv tool install .
-
-# ...or run without installing
-uvx --from . qa-agent --help
+uv tool install "git+https://github.com/<owner>/qa-agent"
 ```
 
-Using pip:
+Or with pipx:
 
 ```bash
-pip install .
+pipx install "git+https://github.com/<owner>/qa-agent"
 ```
 
-For local development (installs the project plus dev dependencies into a venv):
+From a local clone:
 
 ```bash
-uv sync
+git clone https://github.com/<owner>/qa-agent
+cd qa-agent
+uv tool install .        # install the command
+# or: uv sync            # dev setup (project + dev deps in a venv)
 ```
 
 ## Configure
@@ -80,6 +82,21 @@ capture just the answer.
 
 If the chosen model is rate-limited or unavailable, the agent automatically falls back
 to the others and reports which model actually answered.
+
+## Data & privacy
+
+This tool is a client for a third-party LLM service. When you ask a question, the
+**relevant chunk(s) of your file(s) and your question are sent to OpenRouter and the
+selected model provider** to generate the answer. Do not point it at files you are not
+comfortable sending to those services. Nothing is stored by this tool itself — it keeps
+no history and writes nothing beyond the answer (and logs, if you enable a log file).
+
+## Costs & rate limits
+
+The default models are OpenRouter **free** tiers, which have per-day rate limits; when
+one is exhausted the agent falls back to the others. Selecting a non-free model with
+`--model` may incur charges on your OpenRouter account. See
+[OpenRouter pricing](https://openrouter.ai/models) for details.
 
 ## Development
 

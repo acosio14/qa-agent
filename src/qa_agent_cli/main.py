@@ -1,13 +1,22 @@
 import argparse
 import logging
+import os
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
 from . import parser as file_parser
 from . import formatter, llm, retriever
 
 logger = logging.getLogger("qa_agent")
 
+try:
+    __version__ = version("qa-agent")
+except PackageNotFoundError:  # running from source without an install
+    __version__ = "0.1.0"
+
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
+API_KEY_ENV = "OPENROUTER_API_KEY"
 
 # Selectable models, keyed by the short alias accepted via --model.
 FREE_MODELS = {
@@ -37,18 +46,52 @@ def _configure_logging(level: str, log_file: str | None) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Q&A Agent - Will answer questions about any file."
+        prog="qa-agent",
+        description="Q&A Agent — answer a question about a file or directory of files.",
+        epilog='Example:\n  qa-agent ./docs "What is the deployment process?"',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    parser.add_argument("path", type=str)
-    parser.add_argument("question", type=str)
-    parser.add_argument("--model")
-    parser.add_argument("--log-level", default="INFO", choices=LOG_LEVELS)
+    parser.add_argument(
+        "path",
+        metavar="PATH",
+        help="File or directory of files to search (.txt, .md, .docx, .pdf).",
+    )
+    parser.add_argument(
+        "question",
+        metavar="QUESTION",
+        help="The question to answer, in quotes.",
+    )
+    parser.add_argument(
+        "--model",
+        metavar="ALIAS",
+        help=f"Model to use (default: {DEFAULT_MODEL_ALIAS}). "
+        f"One of: {', '.join(FREE_MODELS)}.",
+    )
+    parser.add_argument(
+        "--log-level", default="INFO", choices=LOG_LEVELS, help="Default: INFO."
+    )
     parser.add_argument("--log-file", help="Also write logs to this file.")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     args = parser.parse_args()
 
     _configure_logging(args.log_level, args.log_file)
+
+    # Fail fast with a clear message if the API key is missing, rather than
+    # letting the first request fail with a cryptic auth error.
+    if not os.getenv(API_KEY_ENV):
+        logger.error("%s is not set", API_KEY_ENV)
+        print(
+            f"Error: {API_KEY_ENV} is not set.\n"
+            "Get a key at https://openrouter.ai/keys, then either export it:\n"
+            f"  export {API_KEY_ENV}=sk-or-...\n"
+            "or add it to a .env file in this directory (see .env.example).",
+            file=sys.stderr,
+        )
+        return 2
 
     default_model = FREE_MODELS[DEFAULT_MODEL_ALIAS]
     fallback_models = [m for m in FREE_MODELS.values() if m != default_model]

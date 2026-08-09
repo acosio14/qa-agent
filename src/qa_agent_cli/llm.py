@@ -5,9 +5,14 @@ from enum import Enum, auto
 
 from openrouter import OpenRouter
 import openrouter.errors as errors
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv()  # does this need to cached?
+# Load a .env from the current working directory (not the installed package
+# location), so an installed CLI picks up the key where the user runs it. Guard
+# on a real path: passing "" to load_dotenv is not a reliable no-op.
+_dotenv_path = find_dotenv(usecwd=True)
+if _dotenv_path:
+    load_dotenv(_dotenv_path)
 
 logger = logging.getLogger(__name__)
 

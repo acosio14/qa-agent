@@ -151,11 +151,14 @@ the first request fail with a cryptic auth error. Secrets are never committed �
 
 ## Logging
 
-Logging goes through the standard `logging` module. `main` configures it to
-write to **stderr** (keeping stdout for the answer), with an optional file
-handler via `--log-file` and a level via `--log-level`. Library modules use
-named module loggers, so output can be filtered per module. The `llm` layer logs
-each attempt and the retry/reroute decision, which makes a failed run traceable.
+Logging goes through the standard `logging` module. `main` routes **all** logs —
+ours and third-party libraries' — to a **file** (`~/.qa-agent/qa-agent.log` by
+default, overridable with `--log-file`; level via `--log-level`), and installs no
+terminal handler. This keeps the terminal clean: stdout carries only the answer,
+and user-facing errors are printed to stderr separately from the log stream.
+Library modules use named module loggers, so the file can be filtered per module.
+The `llm` layer logs each attempt and the retry/reroute decision, which makes a
+failed run traceable after the fact.
 
 ## Packaging & deployment
 

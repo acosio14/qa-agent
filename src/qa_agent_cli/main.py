@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 from . import parser as file_parser
 from . import formatter, llm, retriever
@@ -15,6 +16,10 @@ except PackageNotFoundError:  # running from source without an install
     __version__ = "0.1.0"
 
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+
+# All logs go to a file (never the terminal), so stdout stays clean for the
+# answer. Override the location with --log-file.
+DEFAULT_LOG_FILE = Path.home() / ".qa-agent" / "qa-agent.log"
 
 API_KEY_ENV = "OPENROUTER_API_KEY"
 
@@ -80,16 +85,20 @@ def run_pipeline(
 
 
 def _configure_logging(level: str, log_file: str | None) -> None:
-    """Send logs to stderr (and optionally a file), keeping stdout for the answer."""
-    handlers: list[logging.Handler] = [logging.StreamHandler(sys.stderr)]
-    if log_file:
-        handlers.append(logging.FileHandler(log_file))
+    """Route all logs to a file, keeping the terminal clean.
+
+    Nothing is logged to the terminal: stdout carries only the answer, and the
+    caller prints any user-facing error to stderr. Logs (ours and third-party
+    libraries') go solely to ``log_file`` — defaulting to ``DEFAULT_LOG_FILE``.
+    """
+    path = Path(log_file) if log_file else DEFAULT_LOG_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     logging.basicConfig(
         level=getattr(logging, level.upper(), logging.INFO),
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=handlers,
+        handlers=[logging.FileHandler(path, delay=True)],
     )
 
 
@@ -120,7 +129,11 @@ def main() -> int:
     parser.add_argument(
         "--log-level", default="INFO", choices=LOG_LEVELS, help="Default: INFO."
     )
-    parser.add_argument("--log-file", help="Also write logs to this file.")
+    parser.add_argument(
+        "--log-file",
+        metavar="FILE",
+        help=f"Write logs to this file (default: {DEFAULT_LOG_FILE}).",
+    )
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
     )

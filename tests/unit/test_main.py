@@ -1,3 +1,7 @@
+import logging
+import tempfile
+from pathlib import Path
+
 import pytest
 
 from qa_agent_cli import main
@@ -133,6 +137,10 @@ class TestRunPipeline:
 # --------------------------------------------------------------------------- #
 def _run_main(monkeypatch, argv, key="sk-or-test"):
     """Invoke main() with the given argv and API-key state."""
+    # Keep logging out of the real home directory during tests.
+    monkeypatch.setattr(
+        main, "DEFAULT_LOG_FILE", Path(tempfile.gettempdir()) / "qa-agent-test.log"
+    )
     monkeypatch.setattr("sys.argv", ["qa-agent", *argv])
     if key is None:
         monkeypatch.delenv(main.API_KEY_ENV, raising=False)
@@ -198,3 +206,32 @@ class TestMain:
         # Assert
         assert rc == 1
         assert "could not read" in capsys.readouterr().err
+
+
+# --------------------------------------------------------------------------- #
+# logging configuration
+# --------------------------------------------------------------------------- #
+class TestConfigureLogging:
+    def test_logs_go_to_file_and_not_to_the_terminal(self, tmp_path, capsys):
+        # Arrange — isolate the root logger so basicConfig actually reconfigures.
+        root = logging.getLogger()
+        saved_handlers, saved_level = root.handlers[:], root.level
+        log_file = tmp_path / "qa.log"
+
+        try:
+            root.handlers.clear()
+
+            # Act
+            main._configure_logging("INFO", str(log_file))
+            logging.getLogger("qa_agent").info("hello-from-test")
+            for handler in root.handlers:
+                handler.flush()
+
+            # Assert — the line is in the file, and nothing hit stdout/stderr.
+            assert "hello-from-test" in log_file.read_text()
+            streams = capsys.readouterr()
+            assert "hello-from-test" not in streams.err
+            assert "hello-from-test" not in streams.out
+        finally:
+            root.handlers[:] = saved_handlers
+            root.setLevel(saved_level)

@@ -1,7 +1,7 @@
-# Q&A Agent CLI
+# Q&A CLI
 
-A stateless Q&A agent that answers questions about a given set of files, docs, and/or
-notes. It is a simple one-shot agent: it doesn't store conversations and answers one
+A stateless Q&A CLI tool that answers questions about a given set of files, docs, and/or
+notes. It is a simple one-shot tool: it doesn't store conversations and answers one
 question at a time with no memory of previous questions.
 
 Under the hood it parses your file(s) into chunks, retrieves the most relevant chunk
@@ -28,30 +28,30 @@ strategy, trade-offs), see [docs/design.md](docs/design.md).
 The project is distributed via this Git repository (not yet published to PyPI).
 
 Install straight from GitHub with [uv](https://docs.astral.sh/uv/) (recommended) —
-this exposes a global `qa-agent` command:
+this exposes a global `qa-cli` command:
 
 ```bash
-uv tool install "git+https://github.com/acosio14/qa-agent"
+uv tool install "git+https://github.com/acosio14/qa-cli"
 ```
 
 Or with pipx:
 
 ```bash
-pipx install "git+https://github.com/acosio14/qa-agent"
+pipx install "git+https://github.com/acosio14/qa-cli"
 ```
 
 From a local clone:
 
 ```bash
-git clone https://github.com/acosio14/qa-agent
-cd qa-agent
+git clone https://github.com/acosio14/qa-cli
+cd qa-cli
 uv tool install .        # install the command
 # or: uv sync            # dev setup (project + dev deps in a venv)
 ```
 
 ## Configure
 
-The agent needs an OpenRouter API key. Either export it:
+The tool needs an OpenRouter API key. Either export it:
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-...
@@ -67,31 +67,31 @@ cp .env.example .env
 ## Usage
 
 ```bash
-qa-agent <path> "<question>" [--model ALIAS] [--log-level LEVEL] [--log-file FILE]
+qa-cli <path> "<question>" [--model ALIAS] [--log-level LEVEL] [--log-file FILE]
 ```
 
 - `path` — a file or a directory of files to search (`.txt`, `.md`, `.docx`, `.pdf`).
 - `question` — the question to answer, in quotes.
 - `--model` — optional model alias (see below). Defaults to `gemma-4-31b`.
 - `--log-level` — `DEBUG`/`INFO`/`WARNING`/`ERROR`/`CRITICAL` (default `INFO`).
-- `--log-file` — where to write logs (default: `~/.qa-agent/qa-agent.log`).
+- `--log-file` — where to write logs (default: `~/.qa-cli/qa-cli.log`).
 
 Example:
 
 ```bash
-qa-agent ./docs "What is the deployment process?"
+qa-cli ./docs "What is the deployment process?"
 ```
 
 The terminal stays clean: only the answer is printed to stdout (and any error
 message to stderr). All logs — including third-party libraries — go to the log file
-(`~/.qa-agent/qa-agent.log` by default), not the terminal.
+(`~/.qa-cli/qa-cli.log` by default), not the terminal.
 
 ### Model aliases
 
 `gemma-4-31b` (default), `gemma-4-26b`, `gpt-oss-120`, `gpt-oss-20b`,
 `nemotron-3-ultra`, `nemotron-3-nano-omni`.
 
-If the chosen model is rate-limited or unavailable, the agent automatically falls back
+If the chosen model is rate-limited or unavailable, the tool automatically falls back
 to the others and reports which model actually answered.
 
 ## Data & privacy
@@ -105,7 +105,7 @@ no history and writes nothing beyond the answer (and logs, if you enable a log f
 ## Costs & rate limits
 
 The default models are OpenRouter **free** tiers, which have per-day rate limits; when
-one is exhausted the agent falls back to the others. Selecting a non-free model with
+one is exhausted the tool falls back to the others. Selecting a non-free model with
 `--model` may incur charges on your OpenRouter account. See
 [OpenRouter pricing](https://openrouter.ai/models) for details.
 

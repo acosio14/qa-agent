@@ -1,5 +1,5 @@
-from qa_agent_cli.file_types import ParsedFile, Chunk
-from qa_agent_cli.retriever import retrieve_top_k_chunks
+from qa_cli.file_types import ParsedFile, Chunk
+from qa_cli.retriever import retrieve_top_k_chunks
 
 
 def make_file(name, *texts):

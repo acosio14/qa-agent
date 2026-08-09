@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 import openrouter.errors as errors
 
-from qa_agent_cli import llm
-from qa_agent_cli.llm import QAAssistant, QAAssistantError, _classify, _ErrorAction
+from qa_cli import llm
+from qa_cli.llm import QAAssistant, QAAssistantError, _classify, _ErrorAction
 
 
 def make_error(cls, msg="boom"):

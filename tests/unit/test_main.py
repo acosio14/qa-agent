@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from qa_agent_cli import main
-from qa_agent_cli.llm import QAAssistantError
+from qa_cli import main
+from qa_cli.llm import QAAssistantError
 
 
 # --------------------------------------------------------------------------- #
@@ -139,9 +139,9 @@ def _run_main(monkeypatch, argv, key="sk-or-test"):
     """Invoke main() with the given argv and API-key state."""
     # Keep logging out of the real home directory during tests.
     monkeypatch.setattr(
-        main, "DEFAULT_LOG_FILE", Path(tempfile.gettempdir()) / "qa-agent-test.log"
+        main, "DEFAULT_LOG_FILE", Path(tempfile.gettempdir()) / "qa-cli-test.log"
     )
-    monkeypatch.setattr("sys.argv", ["qa-agent", *argv])
+    monkeypatch.setattr("sys.argv", ["qa-cli", *argv])
     if key is None:
         monkeypatch.delenv(main.API_KEY_ENV, raising=False)
     else:
@@ -223,7 +223,7 @@ class TestConfigureLogging:
 
             # Act
             main._configure_logging("INFO", str(log_file))
-            logging.getLogger("qa_agent").info("hello-from-test")
+            logging.getLogger("qa_cli").info("hello-from-test")
             for handler in root.handlers:
                 handler.flush()
 

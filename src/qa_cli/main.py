@@ -8,10 +8,10 @@ from pathlib import Path
 from . import parser as file_parser
 from . import formatter, llm, retriever
 
-logger = logging.getLogger("qa_agent")
+logger = logging.getLogger("qa_cli")
 
 try:
-    __version__ = version("qa-agent")
+    __version__ = version("qa-cli")
 except PackageNotFoundError:  # running from source without an install
     __version__ = "0.1.0"
 
@@ -19,7 +19,7 @@ LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 # All logs go to a file (never the terminal), so stdout stays clean for the
 # answer. Override the location with --log-file.
-DEFAULT_LOG_FILE = Path.home() / ".qa-agent" / "qa-agent.log"
+DEFAULT_LOG_FILE = Path.home() / ".qa-cli" / "qa-cli.log"
 
 API_KEY_ENV = "OPENROUTER_API_KEY"
 
@@ -104,9 +104,9 @@ def _configure_logging(level: str, log_file: str | None) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        prog="qa-agent",
-        description="Q&A Agent — answer a question about a file or directory of files.",
-        epilog='Example:\n  qa-agent ./docs "What is the deployment process?"',
+        prog="qa-cli",
+        description="Q&A CLI — answer a question about a file or directory of files.",
+        epilog='Example:\n  qa-cli ./docs "What is the deployment process?"',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 

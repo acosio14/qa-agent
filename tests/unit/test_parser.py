@@ -1,12 +1,12 @@
 import pytest
 
-from qa_agent_cli.parser import (
+from qa_cli.parser import (
     parse,
     create_file_type_dataclass,
     chunk_file_content,
     CHUNK_SIZE_THRESHOLD_BYTES,
 )
-from qa_agent_cli.file_types import ParsedFile
+from qa_cli.file_types import ParsedFile
 
 
 def by_name(results):

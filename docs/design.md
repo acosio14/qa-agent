@@ -1,8 +1,8 @@
-# Q&A Agent — Design
+# Q&A CLI — Design
 
 ## Overview
 
-The Q&A Agent is a small, stateless command-line tool that answers a single
+The Q&A CLI is a small, stateless command-line tool that answers a single
 question about a file or a directory of files. It is deliberately minimal: it
 keeps no conversation history, so every invocation is a one-shot question and
 answer with no memory of previous questions. This avoids the complexity of a
@@ -22,25 +22,25 @@ the answer plus the model that produced it.
 ## CLI interface
 
 ```
-qa-agent PATH QUESTION [--model ALIAS] [--log-level LEVEL] [--log-file FILE] [--version]
+qa-cli PATH QUESTION [--model ALIAS] [--log-level LEVEL] [--log-file FILE] [--version]
 ```
 
 - `PATH` (positional) — a file or a directory of files to search.
 - `QUESTION` (positional) — the question, in quotes.
 - `--model` (optional) — a model alias; defaults to `gemma-4-31b`.
 - `--log-level` — `DEBUG`/`INFO`/`WARNING`/`ERROR`/`CRITICAL` (default `INFO`).
-- `--log-file` — also write logs to a file.
+- `--log-file` — where to write logs (default: `~/.qa-cli/qa-cli.log`).
 - `--version` — print the version and exit.
 
 `PATH` and `QUESTION` are positional (not flags) so the common case reads
-naturally: `qa-agent ./docs "What is the deploy process?"`. The answer is
-written to **stdout**; all logs and diagnostics go to **stderr**, so the answer
+naturally: `qa-cli ./docs "What is the deploy process?"`. The answer is
+written to **stdout**; all logs go to a file (not the terminal), so the answer
 can be piped or captured cleanly.
 
 ## Modules
 
 The application is split into single-responsibility modules under
-`src/qa_agent_cli/`.
+`src/qa_cli/`.
 
 ### `file_types`
 Defines the shared data model as two pydantic dataclasses:
@@ -140,7 +140,7 @@ failure into a friendly stderr message and an exit code, rather than a traceback
 
 ## Configuration & secrets
 
-The agent requires an OpenRouter API key, read from the `OPENROUTER_API_KEY`
+The tool requires an OpenRouter API key, read from the `OPENROUTER_API_KEY`
 environment variable. For convenience a `.env` file in the **current working
 directory** is loaded on startup (via `find_dotenv(usecwd=True)`), so the key is
 picked up where the user runs the command, not next to the installed package.
@@ -152,7 +152,7 @@ the first request fail with a cryptic auth error. Secrets are never committed �
 ## Logging
 
 Logging goes through the standard `logging` module. `main` routes **all** logs —
-ours and third-party libraries' — to a **file** (`~/.qa-agent/qa-agent.log` by
+ours and third-party libraries' — to a **file** (`~/.qa-cli/qa-cli.log` by
 default, overridable with `--log-file`; level via `--log-level`), and installs no
 terminal handler. This keeps the terminal clean: stdout carries only the answer,
 and user-facing errors are printed to stderr separately from the log stream.
@@ -163,8 +163,8 @@ failed run traceable after the fact.
 ## Packaging & deployment
 
 The project is a standard installable Python package (hatchling build backend,
-`src/` layout) that exposes a **`qa-agent` console command** via a
-`console_scripts` entry point — so users run `qa-agent`, not
+`src/` layout) that exposes a **`qa-cli` console command** via a
+`console_scripts` entry point — so users run `qa-cli`, not
 `python -m ...`. It is distributed from its Git repository and installed with
 `uv tool install` or `pipx`. Dependencies are declared explicitly and kept to
 what is actually imported (`bm25s`, `numpy`, `openrouter`, `pydantic`,

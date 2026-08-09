@@ -1,4 +1,4 @@
-from qa_agent_cli.formatter import format_prompts, _format_chunk, MAX_CHUNK_CHARS
+from qa_cli.formatter import format_prompts, _format_chunk, MAX_CHUNK_CHARS
 
 
 def chunk(text="some content", filename="doc.txt", section="A", line_num=None, page=None):

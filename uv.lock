@@ -950,7 +950,7 @@ wheels = [
 ]
 
 [[package]]
-name = "qa-agent"
+name = "qa-cli"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

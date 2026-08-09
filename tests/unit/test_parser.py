@@ -125,7 +125,7 @@ class TestParseFailuresAreNonFatal:
 
         # Assert
         assert pf.ok is False
-        assert ".xyz" in pf.error
+        assert pf.error is not None and ".xyz" in pf.error
 
     def test_one_bad_file_does_not_abort_the_batch(self, tmp_path):
         # Arrange
@@ -236,7 +236,7 @@ class TestCreateFileTypeDataclass:
         # Assert
         assert pf.ok is False
         assert pf.extension == ".bin"
-        assert ".bin" in pf.error
+        assert pf.error is not None and ".bin" in pf.error
 
     def test_accepts_string_path(self, tmp_path):
         # Arrange
